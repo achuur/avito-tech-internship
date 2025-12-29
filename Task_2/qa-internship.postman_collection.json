@@ -1,0 +1,2052 @@
+{
+	"info": {
+		"_postman_id": "e2761f76-2ed2-42d6-9344-bf2f978896bb",
+		"name": "qa-internship",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40527680",
+		"_collection_link": "https://p11111-8755.postman.co/workspace/21.11.2025~a449d69d-bba3-406c-9512-9038a2b4f58f/collection/40527680-e2761f76-2ed2-42d6-9344-bf2f978896bb?action=share&source=collection_link&creator=40527680"
+	},
+	"item": [
+		{
+			"name": "Создать объявление",
+			"item": [
+				{
+					"name": "1. Успешное создание объявления",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверяем наличие ключей\r",
+									"    pm.expect(jsonData).to.have.property(\"id\");\r",
+									"    pm.expect(jsonData).to.have.property(\"name\");\r",
+									"    pm.expect(jsonData).to.have.property(\"price\");\r",
+									"    pm.expect(jsonData).to.have.property(\"sellerId\");\r",
+									"    pm.expect(jsonData).to.have.property(\"statistics\");\r",
+									"    pm.expect(jsonData).to.have.property(\"createdAt\");\r",
+									"\r",
+									"    // Проверяем внутри statistics\r",
+									"    pm.expect(jsonData.statistics).to.have.property(\"contacts\");\r",
+									"    pm.expect(jsonData.statistics).to.have.property(\"likes\");\r",
+									"    pm.expect(jsonData.statistics).to.have.property(\"viewCount\");\r",
+									"\r",
+									"    // Проверка, что типы полей соответствуют ожидаемым\r",
+									"    pm.expect(jsonData.id).to.be.a(\"string\");\r",
+									"    pm.expect(jsonData.name).to.be.a(\"string\");\r",
+									"    pm.expect(jsonData.price).to.be.a(\"number\");\r",
+									"    pm.expect(jsonData.sellerId).to.be.a(\"number\");\r",
+									"    pm.expect(jsonData.statistics.contacts).to.be.a(\"number\");\r",
+									"    pm.expect(jsonData.statistics.likes).to.be.a(\"number\");\r",
+									"    pm.expect(jsonData.statistics.viewCount).to.be.a(\"number\");\r",
+									"    pm.expect(jsonData.createdAt).to.be.a(\"string\")\r",
+									"    });"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let min = 111111\r",
+									"let max = 999999\r",
+									"let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;\r",
+									"pm.environment.set(\"randomNumber\", randomNumber);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": {{randomNumber}},\n  \"name\": \"title\",\n  \"price\": {{$randomInt}},\n  \"statistics\": {\n    \"likes\": {{$randomInt}},\n    \"viewCount\": {{$randomInt}},\n    \"contacts\": {{$randomInt}}\n  }\n }",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Невозможно создать объявление с пустым полем sellerId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": null,\n  \"name\": \"title\",\n  \"price\": 2500,\n  \"statistics\": {\n    \"likes\": 69,\n    \"viewCount\": 800,\n    \"contacts\": 4\n  }\n }",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Невозможно создать объявление с пустым полем name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 8978,\n  \"name\": \"\",\n  \"price\": 2500,\n  \"statistics\": {\n    \"likes\": 69,\n    \"viewCount\": 800,\n    \"contacts\": 4\n  }\n }",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "4. Невозможно создать объявление с пустым полем price",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 85,\n  \"name\": \"title\",\n  \"price\": null,\n  \"statistics\": {\n    \"likes\": 69,\n    \"viewCount\": 800,\n    \"contacts\": 4\n  }\n }",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "5. Невозможно создать объявление с пустым полем likes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 453,\n  \"name\": \"title\",\n  \"price\": 2500,\n  \"statistics\": {\n    \"likes\": null,\n    \"viewCount\": 800,\n    \"contacts\": 4\n  }\n }",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "6. Невозможно создать объявление с пустым полем viewCount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 99958,\n  \"name\": \"title\",\n  \"price\": 2500,\n  \"statistics\": {\n    \"likes\": 69,\n    \"viewCount\": null,\n    \"contacts\": 4\n  }\n }",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "7. Невозможно создать объявление с пустым полем contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\n  \"sellerID\": 777115,\n  \"name\": \"title\",\n  \"price\": 2500,\n  \"statistics\": {\n    \"likes\": 69,\n    \"viewCount\": 800,\n    \"contacts\": null\n  }\n }",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "8. Невозможно создать объявление с отрицательным значением в поле sellerID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": -11,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": 83,\n    \"viewCount\": 976,\n    \"contacts\": 342\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "9. Невозможно создать объявление с отрицательным значением в поле price",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 11,\n  \"name\": \"title\",\n  \"price\": -250,\n  \"statistics\": {\n    \"likes\": 83,\n    \"viewCount\": 976,\n    \"contacts\": 342\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "10. Невозможно создать объявление с отрицательным значением в поле likes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 11,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": -83,\n    \"viewCount\": 976,\n    \"contacts\": 342\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "11. Невозможно создать объявление с отрицательным значением в поле viewCount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 11,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": 83,\n    \"viewCount\": -976,\n    \"contacts\": 342\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "12. Невозможно создать объявление с отрицательным значением в поле contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 11,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": 83,\n    \"viewCount\": 976,\n    \"contacts\": -342\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "13. Невозможно создать объявление с дробным значением в поле sellerId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 8.5,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": 83,\n    \"viewCount\": 976,\n    \"contacts\": 342\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "14. Невозможно создать объявление с дробным значением в поле likes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 85,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": 4.8,\n    \"viewCount\": 976,\n    \"contacts\": 342\n  }\n }  ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "15. Невозможно создать объявление с дробным значением в поле viewCount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 85,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": 83,\n    \"viewCount\": 9.76,\n    \"contacts\": 342\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				},
+				{
+					"name": "16. Невозможно создать объявление с дробным значением в поле contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sellerID\": 85,\n  \"name\": \"title\",\n  \"price\": 250,\n  \"statistics\": {\n    \"likes\": 83,\n    \"viewCount\": 976,\n    \"contacts\": 34.2\n  }\n }   ",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item"
+							]
+						},
+						"description": "Сохранить объявление"
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Получить объявление по id",
+			"item": [
+				{
+					"name": "1. Успешное получение объявления по его идентификатору",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверяем, что ответ — массив\r",
+									"    pm.expect(jsonData).to.be.an(\"array\");\r",
+									"    pm.expect(jsonData.length).to.be.above(0); // минимум один элемент\r",
+									"\r",
+									"    // Перебираем все элементы массива (или проверить первый)\r",
+									"    jsonData.forEach(function(item) {\r",
+									"        // Проверяем наличие ключей\r",
+									"        pm.expect(item).to.have.property(\"createdAt\");\r",
+									"        pm.expect(item).to.have.property(\"id\");\r",
+									"        pm.expect(item).to.have.property(\"name\");\r",
+									"        pm.expect(item).to.have.property(\"price\");\r",
+									"        pm.expect(item).to.have.property(\"sellerId\");\r",
+									"        pm.expect(item).to.have.property(\"statistics\");\r",
+									"\r",
+									"        // Проверяем внутри statistics\r",
+									"        pm.expect(item.statistics).to.have.property(\"contacts\");\r",
+									"        pm.expect(item.statistics).to.have.property(\"likes\");\r",
+									"        pm.expect(item.statistics).to.have.property(\"viewCount\");\r",
+									"\r",
+									"        // Проверка, что типы полей соответствуют ожидаемым\r",
+									"        pm.expect(item.id).to.be.a(\"string\");\r",
+									"        pm.expect(item.name).to.be.a(\"string\");\r",
+									"        pm.expect(item.price).to.be.a(\"number\");\r",
+									"        pm.expect(item.sellerId).to.be.a(\"number\");\r",
+									"        pm.expect(item.statistics.contacts).to.be.a(\"number\");\r",
+									"        pm.expect(item.statistics.likes).to.be.a(\"number\");\r",
+									"        pm.expect(item.statistics.viewCount).to.be.a(\"number\");\r",
+									"        pm.expect(item.createdAt).to.be.a(\"string\");\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "58e4c067-0649-44aa-813b-15ae464b1ec1",
+									"description": "(Required) идентификатор объявления"
+								}
+							]
+						},
+						"description": "Получить объявление по идентификатору"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Невозможно получить объявление при вводе несуществующего идентификатора",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "b15bae4f-46ff-4660-9fe0-aab5f0cb6255",
+									"description": "(Required) идентификатор объявления"
+								}
+							]
+						},
+						"description": "Получить объявление по идентификатору"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Невозможно получить объявление без ввода идентификатора",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/item/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"item",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "(Required) идентификатор объявления"
+								}
+							]
+						},
+						"description": "Получить объявление по идентификатору"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Получить все объявления по sellerID",
+			"item": [
+				{
+					"name": "1. Успешное получение всех объявлений по sellerID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверяем, что ответ — массив\r",
+									"    pm.expect(jsonData).to.be.an(\"array\");\r",
+									"    pm.expect(jsonData.length).to.be.above(0); // минимум один элемент\r",
+									"\r",
+									"    // Перебираем все элементы массива (или проверить первый)\r",
+									"    jsonData.forEach(function(item) {\r",
+									"        // Проверяем наличие ключей\r",
+									"        pm.expect(item).to.have.property(\"createdAt\");\r",
+									"        pm.expect(item).to.have.property(\"id\");\r",
+									"        pm.expect(item).to.have.property(\"name\");\r",
+									"        pm.expect(item).to.have.property(\"price\");\r",
+									"        pm.expect(item).to.have.property(\"sellerId\");\r",
+									"        pm.expect(item).to.have.property(\"statistics\");\r",
+									"\r",
+									"        // Проверяем внутри statistics\r",
+									"        pm.expect(item.statistics).to.have.property(\"contacts\");\r",
+									"        pm.expect(item.statistics).to.have.property(\"likes\");\r",
+									"        pm.expect(item.statistics).to.have.property(\"viewCount\");\r",
+									"\r",
+									"        // Проверка, что типы полей соответствуют ожидаемым\r",
+									"        pm.expect(item.id).to.be.a(\"string\");\r",
+									"        pm.expect(item.name).to.be.a(\"string\");\r",
+									"        pm.expect(item.price).to.be.a(\"number\");\r",
+									"        pm.expect(item.sellerId).to.be.a(\"number\");\r",
+									"        pm.expect(item.statistics.contacts).to.be.a(\"number\");\r",
+									"        pm.expect(item.statistics.likes).to.be.a(\"number\");\r",
+									"        pm.expect(item.statistics.viewCount).to.be.a(\"number\");\r",
+									"        pm.expect(item.createdAt).to.be.a(\"string\");\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/:sellerID/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								":sellerID",
+								"item"
+							],
+							"variable": [
+								{
+									"key": "sellerID",
+									"value": "85",
+									"description": "(Required) Идентификатор продавца"
+								}
+							]
+						},
+						"description": "Получить все объявления пользователя"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Невозможно получить объявления при отсутствии sellerID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/:sellerID/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								":sellerID",
+								"item"
+							],
+							"variable": [
+								{
+									"key": "sellerID",
+									"value": "",
+									"description": "(Required) Идентификатор продавца"
+								}
+							]
+						},
+						"description": "Получить все объявления пользователя"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Невозможно получить объявления при вводе несуществующего sellerID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/:sellerID/item",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								":sellerID",
+								"item"
+							],
+							"variable": [
+								{
+									"key": "sellerID",
+									"value": "8",
+									"description": "(Required) Идентификатор продавца"
+								}
+							]
+						},
+						"description": "Получить все объявления пользователя"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Получить статистику по объявлению",
+			"item": [
+				{
+					"name": "1. Успешное получение статистики по id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверяем, что ответ — массив\r",
+									"    pm.expect(jsonData).to.be.an(\"array\");\r",
+									"    pm.expect(jsonData.length).to.be.above(0); // минимум один элемент\r",
+									"\r",
+									"    // Перебираем все элементы массива (или проверить первый)\r",
+									"    jsonData.forEach(function(item) {\r",
+									"        // Проверяем наличие ключей\r",
+									"        pm.expect(item).to.have.property(\"contacts\");\r",
+									"        pm.expect(item).to.have.property(\"likes\");\r",
+									"        pm.expect(item).to.have.property(\"viewCount\");\r",
+									"\r",
+									"        // Проверка, что типы полей соответствуют ожидаемым\r",
+									"        pm.expect(item.contacts).to.be.a(\"number\");\r",
+									"        pm.expect(item.likes).to.be.a(\"number\");\r",
+									"        pm.expect(item.viewCount).to.be.a(\"number\");\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/statistic/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"statistic",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "4200ff98-d581-443e-a7cb-58fe2cc40175",
+									"description": "(Required) идентификатор объявления"
+								}
+							]
+						},
+						"description": "Получить статистику по объявлению"
+					},
+					"response": []
+				},
+				{
+					"name": "2. Невозможно получить статистику при вводе несуществующего id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/statistic/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"statistic",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "4200ff98-d581-443e-a7cb-58fe2cc40176",
+									"description": "(Required) идентификатор объявления"
+								}
+							]
+						},
+						"description": "Получить статистику по объявлению"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Невозможно получить статистику при отсутствии id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Проверка статус-кода\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Проверка тела ответа\", function () {\r",
+									"\r",
+									"    // Парсинг тела ответа\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    // Проверка объекта status\r",
+									"    pm.expect(jsonData).to.have.property(\"status\");\r",
+									"    pm.expect(jsonData.status).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка объекта result\r",
+									"    pm.expect(jsonData).to.have.property(\"result\");\r",
+									"    const result = jsonData.result;\r",
+									"\r",
+									"    // Проверка message\r",
+									"    pm.expect(result).to.have.property(\"message\");\r",
+									"    pm.expect(jsonData.result.message).to.be.a(\"string\");\r",
+									"\r",
+									"    // Проверка messages (может быть null)\r",
+									"    pm.expect(result).to.have.property(\"messages\");\r",
+									"    pm.expect(result.messages).to.satisfy(function(value) {\r",
+									"        // Может быть null или объект\r",
+									"        return value === null || typeof value === \"object\";\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/1/statistic/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"1",
+								"statistic",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "(Required) идентификатор объявления"
+								}
+							]
+						},
+						"description": "Получить статистику по объявлению"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": ""
+		}
+	]
+}
